@@ -7,61 +7,6 @@ import math
 import select
 import sys
 
-#读取图片点击位置的像素坐标并通过转换矩阵转换为经纬度
-def select_points_and_transform(image_path, H,pix_coor):
-    """
-    选择点并将其转换为经纬度坐标
-    
-    参数：
-    image_path: str，图像文件路径
-    H: numpy数组，转换矩阵
-    
-    返回值：
-    wld_coordinates_select: list，选定点的经纬度坐标列表
-    """
-    # 读取图像
-    img = imread(image_path)
-    fig, ax = plt.subplots(figsize=(32, 24))
-    ax.imshow(img)
-    plt.title("Select your points")
-    plt.axis('on')
-    pix_coor = np.append(pix_coor, [pix_coor[0]], axis=0)
-    plt.plot(pix_coor[:, 0], pix_coor[:, 1], marker='o', color='blue', linestyle='-',linewidth=1)
-    wld_coordinates_select = []
-
-    # 创建一个 UTM 到 WGS84 经纬度的转换器
-    transformer_t = Transformer.from_crs("epsg:32649", "epsg:4326")    
-
-    test_coor_wld = []
-    for x,y in pix_coor:
-        pix_coor_1 = np.dot(H, np.array([x, y, 1]))
-        pix_coor_2 = pix_coor_1[:2] / pix_coor_1[2]
-        lat, lon = transformer_t.transform(pix_coor_2[0], pix_coor_2[1])
-        test_coor_wld.append((lon,lat))
-    print(test_coor_wld)
-
-    while True:
-        print("请点击图像选择一个点")
-        point = plt.ginput(1, timeout=0)
-        if not point:
-            break
-        x, y = point[0]
-
-        # 将像素点坐标转换为UTM坐标
-        utm_coord = np.dot(H, np.array([x, y, 1]))
-        utm_coord = utm_coord[:2] / utm_coord[2]
-
-        lat, lon = transformer_t.transform(utm_coord[0], utm_coord[1])
-        wld_coordinates_select.append((lon,lat))
-    
-        # 在图上标记点并显示坐标
-        ax.plot(x, y, 'ro', markersize=5)  # 在图上标点
-        ax.text(x, y, f'({lat:.6f}, {lon:.6f})', fontsize=8, color='black', ha='right')  # 在点旁边添加坐标文本
-        print("坐标:",lat,lon)
-        plt.draw()
-
-#参考一开始的取点函数
-    plt.show()
 
 #转换经纬度坐标到utm
 def convert_to_utm(pixel_coordinates_w, from_crs="epsg:4326", to_crs="epsg:32649"):
@@ -302,3 +247,58 @@ def draw_pixel_grilles(img_path, H_matrix):
     plt.savefig('./result_img/all_pixel_grilles.png')
 
 
+#读取图片点击位置的像素坐标并通过转换矩阵转换为经纬度
+def select_points_and_transform(image_path, H,pix_coor):
+    """
+    选择点并将其转换为经纬度坐标
+    
+    参数：
+    image_path: str，图像文件路径
+    H: numpy数组，转换矩阵
+    
+    返回值：
+    wld_coordinates_select: list，选定点的经纬度坐标列表
+    """
+    # 读取图像
+    img = imread(image_path)
+    fig, ax = plt.subplots(figsize=(32, 24))
+    ax.imshow(img)
+    plt.title("Select your points")
+    plt.axis('on')
+    pix_coor = np.append(pix_coor, [pix_coor[0]], axis=0)
+    plt.plot(pix_coor[:, 0], pix_coor[:, 1], marker='o', color='blue', linestyle='-',linewidth=1)
+    wld_coordinates_select = []
+
+    # 创建一个 UTM 到 WGS84 经纬度的转换器
+    transformer_t = Transformer.from_crs("epsg:32649", "epsg:4326")    
+
+    test_coor_wld = []
+    for x,y in pix_coor:
+        pix_coor_1 = np.dot(H, np.array([x, y, 1]))
+        pix_coor_2 = pix_coor_1[:2] / pix_coor_1[2]
+        lat, lon = transformer_t.transform(pix_coor_2[0], pix_coor_2[1])
+        test_coor_wld.append((lon,lat))
+    print(test_coor_wld)
+
+    while True:
+        print("请点击图像选择一个点")
+        point = plt.ginput(1, timeout=0)
+        if not point:
+            break
+        x, y = point[0]
+
+        # 将像素点坐标转换为UTM坐标
+        utm_coord = np.dot(H, np.array([x, y, 1]))
+        utm_coord = utm_coord[:2] / utm_coord[2]
+
+        lat, lon = transformer_t.transform(utm_coord[0], utm_coord[1])
+        wld_coordinates_select.append((lon,lat))
+    
+        # 在图上标记点并显示坐标
+        ax.plot(x, y, 'ro', markersize=5)  # 在图上标点
+        ax.text(x, y, f'({lat:.6f}, {lon:.6f})', fontsize=8, color='black', ha='right')  # 在点旁边添加坐标文本
+        print("坐标:",lat,lon)
+        plt.draw()
+
+#参考一开始的取点函数
+    plt.show()

@@ -71,7 +71,8 @@ with open("data/newpicture.json", "w", encoding="utf-8") as json_file:
 #测试----------------------------------------------------------------------------------------------------------------
 test_result = tl.select_points_and_transform(img_path,H_2,pixel_coord)
 #显示采集的信息
-#print(test_result)
+
+
 
 
 
