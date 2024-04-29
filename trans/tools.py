@@ -47,7 +47,7 @@ def convert_to_utm(pixel_coordinates_w, from_crs="epsg:4326", to_crs="epsg:32649
 
 #转换utm坐标到经纬度
 def convert_to_latilon(pixel_coordinates, from_crs="epsg:32649", to_crs="epsg:4326"):
-    pixel_coordinates_w = convert_to_utm(pixel_coordinates,to_crs,from_crs)      
+    pixel_coordinates_w = convert_to_utm(pixel_coordinates, from_crs, to_crs)      
     return pixel_coordinates_w
 
 #连成闭合获取角点坐标但最后一个点会删除
@@ -269,16 +269,16 @@ def select_points_and_transform(image_path, H,pix_coor):
     plt.plot(pix_coor[:, 0], pix_coor[:, 1], marker='o', color='blue', linestyle='-',linewidth=1)
     wld_coordinates_select = []
 
-    # 创建一个 UTM 到 WGS84 经纬度的转换器
-    transformer_t = Transformer.from_crs("epsg:32649", "epsg:4326")    
+    # # 创建一个 UTM 到 WGS84 经纬度的转换器
+    # transformer_t = Transformer.from_crs("epsg:32649", "epsg:4326")    
 
     test_coor_wld = []
     for x,y in pix_coor:
         pix_coor_1 = np.dot(H, np.array([x, y, 1]))
         pix_coor_2 = pix_coor_1[:2] / pix_coor_1[2]
-        lat, lon = transformer_t.transform(pix_coor_2[0], pix_coor_2[1])
+        # lat, lon = transformer_t.transform(pix_coor_2[0], pix_coor_2[1])
+        lat, lon = convert_to_latilon((pix_coor_2[0], pix_coor_2[1]))
         test_coor_wld.append((lon,lat))
-    print(test_coor_wld)
 
     while True:
         print("请点击图像选择一个点")
@@ -291,7 +291,8 @@ def select_points_and_transform(image_path, H,pix_coor):
         utm_coord = np.dot(H, np.array([x, y, 1]))
         utm_coord = utm_coord[:2] / utm_coord[2]
 
-        lat, lon = transformer_t.transform(utm_coord[0], utm_coord[1])
+        lat, lon = map(float, convert_to_latilon((utm_coord[0], utm_coord[1])))
+ 
         wld_coordinates_select.append((lon,lat))
     
         # 在图上标记点并显示坐标
